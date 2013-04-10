@@ -55,6 +55,7 @@ instance (Ord k) => Applicative (MapVector k) where
     (ConstantMap f) <*> (MapVector vs)  = MapVector   $ f     <$> vs
     (MapVector fs)  <*> (ConstantMap v) = MapVector   $ ($ v) <$> fs
     (MapVector fs)  <*> (MapVector vs)  = MapVector   $ Map.intersectionWith ($) fs vs
+    {-# INLINABLE (<*>) #-}
 
 instance (AdditiveGroup v, Ord k) => AdditiveGroup (MapVector k v) where
     zeroV = MapVector Map.empty
@@ -63,25 +64,30 @@ instance (AdditiveGroup v, Ord k) => AdditiveGroup (MapVector k v) where
     (ConstantMap v) ^+^ (MapVector vs)   = MapVector   $ (v ^+^) <$> vs
     (MapVector vs)  ^+^ (ConstantMap v)  = MapVector   $ (^+^ v) <$> vs
     (MapVector vs)  ^+^ (MapVector vs')  = MapVector   $ Map.unionWith (^+^) vs vs'
+    {-# INLINABLE (^+^) #-}
     
 instance (Ord k, VectorSpace v) => VectorSpace (MapVector k v) where
     type Scalar (MapVector k v) = Scalar v  -- therefore Scalar (MapVector k (Mapvector k' v))
                                             --   = Scalar v
     s *^ v  = (s *^) <$> v 
+    {-# INLINABLE (*^) #-}
 
 instance (Ord k, VectorSpace v, InnerSpace v, AdditiveGroup (Scalar v)) => InnerSpace (MapVector k v) where
     (ConstantMap v) <.> (ConstantMap v') =                      v <.> v'
     (ConstantMap v) <.> (MapVector vs)   = foldl' (^+^) zeroV $ (v <.>) <$> vs
     (MapVector vs)  <.> (ConstantMap v)  = foldl' (^+^) zeroV $ (<.> v) <$> vs
     (MapVector vs)  <.> (MapVector vs')  = foldl' (^+^) zeroV $ Map.intersectionWith (<.>) vs vs'
+    {-# INLINABLE (<.>) #-}
 
 instance (Ord k, AdditiveGroup v, Num v) => Num (MapVector k v) where
     (+) = (^+^)
+    {-# INLINE (+) #-}
     x * y = (*) <$> x <*> y
+    {-# INLINE (*) #-}
     abs = fmap abs
+    {-# INLINE abs #-}
     fromInteger = pure . fromInteger
     signum = error "no signum for MapVectors"
-
 
 -- It looks like a HasBasis instance should be possible; 
 -- I just haven't spent the time to figure it out.
