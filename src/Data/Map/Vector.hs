@@ -82,6 +82,7 @@ instance (Ord k, VectorSpace v, InnerSpace v, AdditiveGroup (Scalar v)) => Inner
 instance (Ord k, AdditiveGroup v, Num v) => Num (MapVector k v) where
     (+) = (^+^)
     {-# INLINE (+) #-}
+    negate = negateV
     x * y = (*) <$> x <*> y
     {-# INLINE (*) #-}
     abs = fmap abs
