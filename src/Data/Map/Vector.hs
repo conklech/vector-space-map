@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts #-}
 {-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, DeriveDataTypeable #-}
+{-# LANGUAGE TupleSections #-}
 module Data.Map.Vector (MapVector(..)) where
 
 import Prelude hiding (foldr)
@@ -7,8 +8,10 @@ import Data.Foldable
 import Data.Traversable
 import Data.Data
 import Control.Applicative
+import Control.Arrow
 import Data.AdditiveGroup
 import Data.VectorSpace
+import Data.Basis
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -82,6 +85,7 @@ instance (Ord k, VectorSpace v, InnerSpace v, AdditiveGroup (Scalar v)) => Inner
 instance (Ord k, AdditiveGroup v, Num v) => Num (MapVector k v) where
     (+) = (^+^)
     {-# INLINE (+) #-}
+    negate = negateV
     x * y = (*) <$> x <*> y
     {-# INLINE (*) #-}
     abs = fmap abs
@@ -89,14 +93,23 @@ instance (Ord k, AdditiveGroup v, Num v) => Num (MapVector k v) where
     fromInteger = pure . fromInteger
     signum = error "no signum for MapVectors"
 
--- It looks like a HasBasis instance should be possible; 
--- I just haven't spent the time to figure it out.
 
--- (Remember to tighten version bounds on vector-space if this is implemented.)
+instance (Ord k, HasBasis v, AdditiveGroup (Scalar v)) => HasBasis (MapVector k v) where
+    type Basis (MapVector k v) = (k, Basis v)
 
---instance (Ord k, HasBasis v) => HasBasis (MapVector k v) where
---    type Basis (MapVector k v) = (k, Basis v)
---    basisValue (k, v) = MapVector $ Map.fromList $ (k, basisValue v):[]
---    
---    decompose (ConstantMap _) = error "decompose: not defined for ConstantMap"
---    decompose (MapVector vs) =  
+    basisValue (k, v) = MapVector $ Map.fromList $ (k, basisValue v):[]
+    
+    decompose (MapVector vs)
+      = Map.toList (decompose<$>vs) >>= \(k,vs) -> first(k,)<$>vs
+    decompose (ConstantMap _) = error "decompose: not defined for ConstantMap.\
+          \ Use decompose', which works properly on infinite-dimensional spaces."
+       -- Note that it would be possible to properly implement 'decompose' under
+       -- the additional constraint that the keys are enumerable. See e.g. the
+       -- @universe-base@ package.
+
+    decompose' (MapVector vs) (k,bv) = case Map.lookup k vs of
+         Nothing -> zeroV
+         Just v  -> decompose' v bv
+    decompose' (ConstantMap c) (_,bv) = decompose' c bv
+    
+    
