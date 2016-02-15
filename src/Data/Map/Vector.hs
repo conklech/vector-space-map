@@ -82,18 +82,6 @@ instance (Ord k, VectorSpace v, InnerSpace v, AdditiveGroup (Scalar v)) => Inner
     (MapVector vs)  <.> (MapVector vs')  = foldl' (^+^) zeroV $ Map.intersectionWith (<.>) vs vs'
     {-# INLINABLE (<.>) #-}
 
-instance (Ord k, AdditiveGroup v, Num v) => Num (MapVector k v) where
-    (+) = (^+^)
-    {-# INLINE (+) #-}
-    negate = negateV
-    x * y = (*) <$> x <*> y
-    {-# INLINE (*) #-}
-    abs = fmap abs
-    {-# INLINE abs #-}
-    fromInteger = pure . fromInteger
-    signum = error "no signum for MapVectors"
-
-
 instance (Ord k, HasBasis v, AdditiveGroup (Scalar v)) => HasBasis (MapVector k v) where
     type Basis (MapVector k v) = (k, Basis v)
 
