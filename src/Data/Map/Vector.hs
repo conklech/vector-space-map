@@ -20,16 +20,15 @@ import qualified Data.Map as Map
 -- | Note: '<*>' in the 'Applicative' instance operates under /intersection/.  i.e.:
 --
 -- >>> (MapVector $ Map.fromList [("x", id)]) <*> (MapVector $ Map.fromList [("y", 3)])
--- MapVector (Map.fromList [])
+-- MapVector (fromList [])
 --  
--- '*' in the 'Num' instance performs elementwise multiplication.  It is defined in terms of
--- '<*>' and therefore also operates under intersection:
+-- Use the 'Applicative' instance for elementwise operations:
 --   
--- >>> (MapVector $ Map.fromList [("x", 2), ("y", 3)]) * (MapVector $ Map.fromList [("x", 5),("y", 7)])
--- MapVector (Map.fromList [("x", 10), ("y", 21)])
+-- >>> liftA2 (*) (MapVector $ Map.fromList [("x", 2), ("y", 3)]) (MapVector $ Map.fromList [("x", 5),("y", 7)])
+-- MapVector (fromList [("x",10),("y",21)])
 --   
--- >>> (MapVector $ Map.fromList [("x", 2), ("y", 3)]) * (MapVector $ Map.fromList [("y", 7)])
--- MapVector (Map.fromList [("y", 21)])
+-- >>> liftA2 (*) (MapVector $ Map.fromList [("x", 2), ("y", 3)]) (MapVector $ Map.fromList [("y", 7)])
+-- MapVector (fromList [("y",21)])
 --
 -- '*^' in the 'VectorSpace' instance multiplies by the scalar of v.  Nesting MapVectors preserves
 -- the scalar type, e.g. @Scalar (MapVector k (MapVector k' v))@ = @Scalar v@.
@@ -45,7 +44,7 @@ import qualified Data.Map as Map
 -- >>> (pure . MapVector $ Map.fromList [("x", 2 :: Int), ("y", 3)]) <.> (MapVector $ Map.fromList [("a", pure (5::Int))])
 -- 25
 --
--- Addition, using either '+' or '^+^', operates under union.
+-- Addition with '^+^' operates under union.
 
 data MapVector k v = 
       MapVector (Map k v) 
