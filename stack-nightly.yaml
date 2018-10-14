@@ -1,0 +1,8 @@
+resolver: nightly-2018-10-12
+extra-deps:
+  - git: https://github.com/conal/vector-space.git
+    commit: a4c1313b577f2130c07b498d7bd189d3550917c0
+  - git: https://github.com/conal/Boolean.git
+    commit: 193d6e20b35d58a83f468c7119ae05846ed19991
+  - git: https://github.com/conal/NumInstances.git
+    commit: bc935ac944470efc074cae922ce6cdaf6709ae20

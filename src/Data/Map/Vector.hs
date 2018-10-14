@@ -1,5 +1,5 @@
 {-# LANGUAGE TypeFamilies, FlexibleContexts #-}
-{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, DeriveDataTypeable #-}
+{-# LANGUAGE DeriveFunctor, DeriveFoldable, DeriveTraversable, DeriveDataTypeable, UndecidableInstances #-}
 {-# LANGUAGE TupleSections #-}
 module Data.Map.Vector (MapVector(..)) where
 
@@ -51,10 +51,13 @@ data MapVector k v =
     | ConstantMap v -- ^ An infinite-dimensional vector with the same value on all dimensions
     deriving (Eq, Functor, Show, Read, Foldable, Traversable, Typeable, Data)
 
+instance Semigroup (MapVector k v) where
+    (<>) a b = a <> b
+    
 -- | Respects the inner 'Monoid', unlike 'Map'.
 instance (Ord k, Monoid v) => Monoid (MapVector k v) where
     mempty  = pure mempty
-    mappend = liftA2 mappend
+    --mappend = liftA2 mappend
   
 instance (Ord k) => Applicative (MapVector k) where 
     pure = ConstantMap
